@@ -8,6 +8,7 @@ if IS_FXSERVER then
     local Tunnel = module("frp_lib", "lib/Tunnel")
     local Proxy = module("frp_lib", "lib/Proxy")
     
+    Business = Proxy.getInterface("business")
     API = Proxy.getInterface("API")
     cAPI = Tunnel.getInterface("API")
 else
@@ -45,7 +46,11 @@ function DoorSystem:IsPlayerAllowedToChangeState(doorIdx, player)
     for _, allowGroup in ipairs(allowedGroups) do
 
         if IS_FXSERVER then
-            playerPermission = API.IsPlayerAceAllowedGroup(player, allowGroup)
+            local User = API.GetUserFromSource( tonumber( player ) )
+            local Character = User:GetCharacter()
+            local citizenId = Character:GetCitizenId()
+
+            playerPermission = Business.hasClassePermission(citizenId, allowGroup) or API.IsPlayerAceAllowedGroup(player, allowGroup)
         else
             playerPermission = API.IsPlayerAceAllowedGroup(allowGroup)
         end
